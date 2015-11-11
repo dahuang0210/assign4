@@ -2,7 +2,7 @@
  Assignment 4
  Author:          Bao Yuchen
  Student Number:  103254021
- Update:          2015/11/10
+ Update:          2015/11/11
  */
 
 public class ObjType {
@@ -113,7 +113,6 @@ class ResourcesManager extends HashMap<Integer, PImage> {
   public final static int enemy = 40, enemy1=41;
   public final static int fighter = 50, treasure = 51, bullet = 52;
   public final static int explode = 70;
-  public final static int explodeFight = 80;
 
   public ResourcesManager() {
     super();
@@ -139,13 +138,12 @@ class ResourcesManager extends HashMap<Integer, PImage> {
     addImage(ResourcesManager.st1, "img/start1.png");
     addImage(ResourcesManager.st2, "img/start2.png");
     addImage(ResourcesManager.enemy, "img/enemy.png");
-    addImage(ResourcesManager.enemy1, "img/Moocs-element-enemy1.png");
+    //addImage(ResourcesManager.enemy1, "img/Moocs-element-enemy1.png");
     addImage(ResourcesManager.fighter, "img/fighter.png");
     addImage(ResourcesManager.treasure, "img/treasure.png");
     addImage(ResourcesManager.bullet, "img/shoot.png");
     for (int i=0; i<5; i++) {
       addImage(ResourcesManager.explode+i, "img/flame"+(i+1)+".png");
-      addImage(ResourcesManager.explodeFight+i, "img/flame"+(i+1)+".png");
     }
   }
 }
@@ -521,7 +519,8 @@ class Enemy extends DrawingOBJ {
   private float angle = 0;
 
   public Enemy(Bullet[] bulletArray, Fighter target, GameDataChanged listener, int level) {
-    super(60, 60, resourcesManager.get(ResourcesManager.enemy1), ObjType.ENEMY);
+    //super(60, 60, resourcesManager.get(ResourcesManager.enemy1), ObjType.ENEMY);
+    super(60, 60, resourcesManager.get(ResourcesManager.enemy), ObjType.ENEMY);
     setIsDrawSelf(false);
     this.listener = listener;
     this.target = target;
@@ -587,7 +586,7 @@ class Enemy extends DrawingOBJ {
     if (this.isHitOBJ(target)) {
       if (listener != null) {
         listener.subHP(20, this);
-        listener.enemyMoveOut(this, true);
+        listener.enemyMoveOut(this, false);
       }
     }
     if (bulletArray!=null) {
@@ -690,7 +689,7 @@ class Explode extends DrawingOBJ {
   private DrawingOBJ targetOBJ;
 
   public Explode(GameDataChanged listener, int startID) {
-    super(64, 64, null, ObjType.TITLE);
+    super(81, 81, null, ObjType.TITLE);
     this.listener = listener;
     setIsDrawSelf(false);
     expArray = new PImage[5];
@@ -709,7 +708,7 @@ class Explode extends DrawingOBJ {
 
   public void SpecialDraw() {
     if (shownID<5) {
-      image(expArray[shownID], x-64, y-64);
+      image(expArray[shownID], x-(objWidth>>1), y-(objHeight>>1));
     } else if (listener != null) {
       listener.explodeFinished(this);
     }
@@ -742,7 +741,7 @@ class Bullet extends DrawingOBJ {
   private DrawingOBJ target;
 
   public Bullet(DrawingOBJ target) {
-    super(59, 20, resourcesManager.get(ResourcesManager.bullet), ObjType.BULLET);
+    super(31, 27, resourcesManager.get(ResourcesManager.bullet), ObjType.BULLET);
     this.target = target;
     isEnabled = false;
   }
@@ -892,25 +891,25 @@ class OnGaming extends Screen implements KeyPressListener, GameDataChanged {
       yy= floor(random(420)+30);
       teamCnt = 5;
       for (int i =0; i<teamCnt; i++) {
-        addEnemyInTeam(60*i/s,yy,s);
+        addEnemyInTeam(60*i/s, yy, s);
       }
     } else if (teamId==1) {
       yy= floor(random(220)+30);
       teamCnt = 5;
       for (int i =0; i<teamCnt; i++) {
-        addEnemyInTeam(60*i/s,yy+50*i,s);
+        addEnemyInTeam(60*i/s, yy+50*i, s);
       }
     } else {
       yy= floor(random(220)+130);
       teamCnt = 8;
-      addEnemyInTeam(0,yy,s);
-      addEnemyInTeam(60/s,yy-50,s);
-      addEnemyInTeam(60/s,yy+50,s);
-      addEnemyInTeam(120/s,yy-100,s);
-      addEnemyInTeam(120/s,yy+100,s);
-      addEnemyInTeam(180/s,yy-50,s);
-      addEnemyInTeam(180/s,yy+50,s);
-      addEnemyInTeam(240/s,yy,s);
+      addEnemyInTeam(0, yy, s);
+      addEnemyInTeam(60/s, yy-50, s);
+      addEnemyInTeam(60/s, yy+50, s);
+      addEnemyInTeam(120/s, yy-100, s);
+      addEnemyInTeam(120/s, yy+100, s);
+      addEnemyInTeam(180/s, yy-50, s);
+      addEnemyInTeam(180/s, yy+50, s);
+      addEnemyInTeam(240/s, yy, s);
     }
     teamId++;
     if (teamId>2) {
@@ -965,12 +964,6 @@ class OnGaming extends Screen implements KeyPressListener, GameDataChanged {
     if (hp > 100) {
       hp = 100;
     }
-
-    Explode explode = new Explode(this, ResourcesManager.explodeFight);
-    explode.bindingOBJ(fighter);
-    explode.zOrder = 3;
-    drawingArray.add(explode);
-
     syncInfo();
   }
 
@@ -1036,23 +1029,33 @@ class OnGaming extends Screen implements KeyPressListener, GameDataChanged {
 class GameStart extends Screen implements MouseListener {
 
   private boolean isOnButton, isPressButton;
+  private int alpha, alpha_offset ;
 
   public GameStart(ScreenChangeListener listener) {
     super(resourcesManager.get(ResourcesManager.st2), ObjType.TITLE, listener);
+    alpha_offset = 10;
+    alpha = 0;
   }
 
   public void SpecialDraw() {
     if (isOnButton && (! isPressButton)) {
+      image(img, x, y);
+      tint(255, alpha);
       image(resourcesManager.get(ResourcesManager.st1), 0, 0);
+      tint(255, 255);
+      alpha += alpha_offset;
+      if (alpha>255) {
+        alpha = 255;
+        alpha_offset = -alpha_offset;
+      } else if (alpha<100) {
+        alpha = 100;
+        alpha_offset = -alpha_offset;
+      }
     }
   }
 
   public void doGameLogic() {
-    if (isOnButton && (! isPressButton)) {
-      setIsDrawSelf(false);
-    } else {
-      setIsDrawSelf(true);
-    }
+    setIsDrawSelf((!isOnButton) ||isPressButton);
   }
 
 
@@ -1070,7 +1073,12 @@ class GameStart extends Screen implements MouseListener {
     }
   }
   public void mouseMovedFun(int x, int y) {
-    isOnButton =  isPointHitArea(x, y, 210, 380, 450, 410);
+    boolean newBool = isPointHitArea(x, y, 210, 380, 450, 410);
+    if (newBool!=isOnButton) {
+      alpha_offset = 10;
+      alpha = 0;
+    }
+    isOnButton =  newBool;
   }
 }
 
@@ -1081,6 +1089,7 @@ class GameEnd extends Screen implements MouseListener {
 
   public int level = 0;
   private boolean isOnButton, isPressButton;
+  private int alpha, alpha_offset ;
 
   public GameEnd(ScreenChangeListener listener) {
     super(resourcesManager.get(ResourcesManager.end2), ObjType.TITLE, listener);
@@ -1090,7 +1099,18 @@ class GameEnd extends Screen implements MouseListener {
 
   public void SpecialDraw() {
     if (isOnButton && (! isPressButton)) {
+      image(img, x, y);
+      tint(255, alpha);
       image(resourcesManager.get(ResourcesManager.end1), 0, 0);
+      tint(255, 255);
+      alpha += alpha_offset;
+      if (alpha>255) {
+        alpha = 255;
+        alpha_offset = -alpha_offset;
+      } else if (alpha<100) {
+        alpha = 100;
+        alpha_offset = -alpha_offset;
+      }
     }
     textAlign(CENTER);
     textSize(30);
@@ -1098,11 +1118,7 @@ class GameEnd extends Screen implements MouseListener {
   }
 
   public void doGameLogic() {
-    if (isOnButton && (! isPressButton)) {
-      setIsDrawSelf(false);
-    } else {
-      setIsDrawSelf(true);
-    }
+    setIsDrawSelf((!isOnButton) ||isPressButton);
   }
 
   public void drawFrame() {
@@ -1125,6 +1141,11 @@ class GameEnd extends Screen implements MouseListener {
     }
   }
   public void mouseMovedFun(int x, int y) {
-    isOnButton =  isPointHitArea(x, y, 210, 310, 435, 345);
+    boolean newBool = isPointHitArea(x, y, 210, 310, 435, 345);
+    if (newBool!=isOnButton) {
+      alpha_offset = 10;
+      alpha = 0;
+    }
+    isOnButton =  newBool;
   }
 }
