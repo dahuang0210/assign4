@@ -2,7 +2,7 @@
  Assignment 4
  Author:          Bao Yuchen
  Student Number:  103254021
- Update:          2015/11/11
+ Update:          2015/11/18
  */
 
 public class ObjType {
@@ -788,7 +788,7 @@ class OnGaming extends Screen implements KeyPressListener, GameDataChanged {
   public int level, hp;
   private long lastShootTime;
   private int bg2x = 640, speed = 5, teamCnt, teamId, listChangeCnt;
-  private boolean fighting, added;
+  private boolean fighting;//, added;
   private ArrayList<DrawingOBJ>  drawingArray;
   private Fighter fighter = null;
   private GameTitle title = null;
@@ -852,13 +852,14 @@ class OnGaming extends Screen implements KeyPressListener, GameDataChanged {
 
   public void doGameLogic() {
     doBackgroundLogic();
+    /*
     boolean isSpealLevel = (level%20 == 0);
     if ((level>0)&&(isSpealLevel)&&(!added)) {
       added = true;
       drawingArray.add(new Enemy(bulletArray, fighter, this, level));
     } else if (added&&(!isSpealLevel)) {
       added = false;
-    }
+    }*/
     if (hp <= 0) {
       listener.endGame(level);
     }
